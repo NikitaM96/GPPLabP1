@@ -20,19 +20,16 @@ GLint	positionID,	// Position ID
 		colorID,	// Color ID
 		textureID,	// Texture ID
 		uvID,		// UV ID
-		mvpID;		// Model View Projection ID
+		mvpID,		// Model View Projection ID
+		x_offsetID, // X offset ID
+		y_offsetID,	// Y offset ID
+		z_offsetID;	// Z offset ID
 
 GLenum	error;		// OpenGL Error Code
 
-//const string filename = ".//Assets//Textures//coordinates.tga";
-//const string filename = ".//Assets//Textures//cube.tga";
-//const string filename = ".//Assets//Textures//grid.tga";
-const string filename = ".//Assets//Textures//grid_wip.tga";
-//const string filename = ".//Assets//Textures//minecraft.tga";
-//const string filename = ".//Assets//Textures//texture.tga";
-//const string filename = ".//Assets//Textures//texture_2.tga";
-//const string filename = ".//Assets//Textures//uvtemplate.tga";
 
+//Please see .//Assets//Textures// for more textures
+const string filename = ".//Assets//Textures//grid_wip.tga";
 
 int width;						// Width of texture
 int height;						// Height of texture
@@ -40,9 +37,12 @@ int comp_count;					// Component of texture
 
 unsigned char* img_data;		// image data
 
-mat4 mvp, projection, view, model;			// Model View Projection
+mat4 mvp, projection, 
+		view, model;			// Model View Projection
 
-Font font;
+Font font;						// Game font
+
+float x_offset, y_offset, z_offset; // offset on screen (Vertex Shader)
 
 Game::Game() : 
 	window(VideoMode(800, 600), 
@@ -145,12 +145,9 @@ void Game::initialize()
 	// Indices to be drawn
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * INDICES * sizeof(GLuint), indices, GL_STATIC_DRAW);
 
-	const char* vs_src = 
+	// NOTE: uniforms values must be used so that they can be retreived
+	const char* vs_src =
 		"#version 400\n\r"
-		""
-		//"layout(location = 0) in vec3 sv_position; //Use for individual Buffers"
-		//"layout(location = 1) in vec4 sv_color; //Use for individual Buffers"
-		//"layout(location = 2) in vec2 sv_texel; //Use for individual Buffers"
 		""
 		"in vec3 sv_position;"
 		"in vec4 sv_color;"
@@ -160,12 +157,15 @@ void Game::initialize()
 		"out vec2 uv;"
 		""
 		"uniform mat4 sv_mvp;"
+		"uniform float sv_x_offset;"
+		"uniform float sv_y_offset;"
+		"uniform float sv_z_offset;"
 		""
 		"void main() {"
 		"	color = sv_color;"
 		"	uv = sv_uv;"
 		//"	gl_Position = vec4(sv_position, 1);"
-		"	gl_Position = sv_mvp * vec4(sv_position, 1);"
+		"	gl_Position = sv_mvp * vec4(sv_position.x + sv_x_offset, sv_position.y + sv_y_offset, sv_position.z + sv_z_offset, 1 );"
 		"}"; //Vertex Shader Src
 
 	DEBUG_MSG("Setting Up Vertex Shader");
@@ -197,14 +197,8 @@ void Game::initialize()
 		"out vec4 fColor;"
 		""
 		"void main() {"
-		//"	vec4 lightColor = vec4(1.0f, 0.0f, 0.0f, 1.0f); "
-		//"	fColor = vec4(0.50f, 0.50f, 0.50f, 1.0f);"
-		//"	fColor = texture2D(f_texture, uv);"
-		//"	fColor = color * texture2D(f_texture, uv);"
-		//"	fColor = lightColor * texture2D(f_texture, uv);"
-		//"	fColor = color + texture2D(f_texture, uv);"
 		"	fColor = color - texture2D(f_texture, uv);"
-		//"	fColor = color;"
+		""
 		"}"; //Fragment Shader Src
 
 	DEBUG_MSG("Setting Up Fragment Shader");
@@ -372,6 +366,13 @@ void Game::render()
 	mvpID = glGetUniformLocation(progID, "sv_mvp");
 	if (mvpID < 0) { DEBUG_MSG("mvpID not found"); }
 
+	x_offsetID = glGetUniformLocation(progID, "sv_x_offset");
+	if (x_offsetID < 0) { DEBUG_MSG("x_offsetID not found"); }
+	y_offsetID = glGetUniformLocation(progID, "sv_y_offset");
+	if (y_offsetID < 0) { DEBUG_MSG("y_offsetID not found"); }
+	z_offsetID = glGetUniformLocation(progID, "sv_z_offset");
+	if (z_offsetID < 0) { DEBUG_MSG("z_offsetID not found"); };
+
 	// VBO Data....vertices, colors and UV's appended
 	glBufferSubData(GL_ARRAY_BUFFER, 0 * VERTICES * sizeof(GLfloat), 3 * VERTICES * sizeof(GLfloat), vertices);
 	glBufferSubData(GL_ARRAY_BUFFER, 3 * VERTICES * sizeof(GLfloat), 4 * COLORS * sizeof(GLfloat), colors);
@@ -383,6 +384,12 @@ void Game::render()
 	// Set Active Texture .... 32
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(textureID, 0);
+
+	// Set the X, Y and Z offset (this allows for multiple cubes via different shaders)
+	// Experiment with these values to change screen positions
+	glUniform1f(x_offsetID, 0.00f);
+	glUniform1f(y_offsetID, 1.00f);
+	glUniform1f(z_offsetID, 3.00f);
 
 	// Set pointers for each parameter (with appropriate starting positions)
 	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
