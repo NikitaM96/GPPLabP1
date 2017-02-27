@@ -388,8 +388,8 @@ void Game::render()
 	// Set the X, Y and Z offset (this allows for multiple cubes via different shaders)
 	// Experiment with these values to change screen positions
 	glUniform1f(x_offsetID, 0.00f);
-	glUniform1f(y_offsetID, 1.00f);
-	glUniform1f(z_offsetID, 3.00f);
+	glUniform1f(y_offsetID, 0.00f);
+	glUniform1f(z_offsetID, 0.00f);
 
 	// Set pointers for each parameter (with appropriate starting positions)
 	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
