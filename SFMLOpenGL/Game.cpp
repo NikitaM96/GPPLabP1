@@ -15,7 +15,7 @@ GLuint	vsid,		// Vertex Shader ID
 		vao = 0,	// Vertex Array ID
 		vbo,		// Vertex Buffer ID
 		vib,		// Vertex Index Buffer
-		to;			// Texture ID 1 to 32
+		to[1];		// Texture ID 1 to 32
 GLint	positionID,	// Position ID
 		colorID,	// Color ID
 		textureID,	// Texture ID
@@ -246,8 +246,8 @@ void Game::initialize()
 	}
 
 	glEnable(GL_TEXTURE_2D);
-	glGenTextures(1, &to);
-	glBindTexture(GL_TEXTURE_2D, to);
+	glGenTextures(1, &to[0]);
+	glBindTexture(GL_TEXTURE_2D, to[0]);
 
 	// Wrap around
 	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glTexParameter.xml
@@ -381,9 +381,9 @@ void Game::render()
 	// Send transformation to shader mvp uniform
 	glUniformMatrix4fv(mvpID, 1, GL_FALSE, &mvp[0][0]);
 
-	// Set Active Texture .... 32
+	// Set Active Texture .... 32 GL_TEXTURE0 .... GL_TEXTURE31
 	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(textureID, 0);
+	glUniform1i(textureID, 0); // 0 .... 31
 
 	// Set the X, Y and Z offset (this allows for multiple cubes via different shaders)
 	// Experiment with these values to change screen positions
