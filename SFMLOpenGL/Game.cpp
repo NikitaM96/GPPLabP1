@@ -1,6 +1,7 @@
 #include <Game.h>
 #include <Cube.h>
 
+// Helper to convert Number to String for HUD
 template <typename T>
 string toString(T number)
 {
