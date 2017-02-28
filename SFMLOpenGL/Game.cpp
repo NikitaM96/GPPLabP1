@@ -16,7 +16,7 @@ GLuint	vsid,		// Vertex Shader ID
 		vao = 0,	// Vertex Array ID
 		vbo,		// Vertex Buffer ID
 		vib,		// Vertex Index Buffer
-		to[1];		// Texture ID 1 to 32
+		to[1];		// Texture ID
 GLint	positionID,	// Position ID
 		colorID,	// Color ID
 		textureID,	// Texture ID
@@ -134,19 +134,20 @@ void Game::initialize()
 	DEBUG_MSG(glGetString(GL_VERSION));
 
 	// Vertex Array Buffer
-	glGenBuffers(1, &vbo);		// Gen Vertex Buffer
+	glGenBuffers(1, &vbo);		// Generate Vertex Buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 	// Vertices (3) x,y,z , Colors (4) RGBA, UV/ST (2)
 	glBufferData(GL_ARRAY_BUFFER, ((3 * VERTICES) + (4 * COLORS) + (2 * UVS)) * sizeof(GLfloat), NULL, GL_STATIC_DRAW);
 
-	glGenBuffers(1, &vib); //Gen Vertex Index Buffer
+	glGenBuffers(1, &vib); //Generate Vertex Index Buffer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vib);
 
 	// Indices to be drawn
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * INDICES * sizeof(GLuint), indices, GL_STATIC_DRAW);
 
-	// NOTE: uniforms values must be used so that they can be retreived
+	// NOTE: uniforms values must be used within Shader so that they 
+	// can be retreived
 	const char* vs_src =
 		"#version 400\n\r"
 		""
