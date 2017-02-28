@@ -310,6 +310,8 @@ void Game::update()
 	DEBUG_MSG("Updating...");
 #endif
 	// Update Model View Projection
+	// For mutiple objects (cubes) create multiple models
+	// To alter Camera modify view & projection
 	mvp = projection * view * model;
 }
 
@@ -355,23 +357,29 @@ void Game::render()
 	// Use Progam on GPU
 	glUseProgram(progID);
 
-	// Find variables in the shader
+	// Find variables within the shader
 	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetAttribLocation.xml
 	positionID = glGetAttribLocation(progID, "sv_position");
 	if (positionID < 0) { DEBUG_MSG("positionID not found"); }
+
 	colorID = glGetAttribLocation(progID, "sv_color");
 	if (colorID < 0) { DEBUG_MSG("colorID not found"); }
+
 	uvID = glGetAttribLocation(progID, "sv_uv");
 	if (uvID < 0) { DEBUG_MSG("uvID not found"); }
+
 	textureID = glGetUniformLocation(progID, "f_texture");
 	if (textureID < 0) { DEBUG_MSG("textureID not found"); }
+
 	mvpID = glGetUniformLocation(progID, "sv_mvp");
 	if (mvpID < 0) { DEBUG_MSG("mvpID not found"); }
 
 	x_offsetID = glGetUniformLocation(progID, "sv_x_offset");
 	if (x_offsetID < 0) { DEBUG_MSG("x_offsetID not found"); }
+
 	y_offsetID = glGetUniformLocation(progID, "sv_y_offset");
 	if (y_offsetID < 0) { DEBUG_MSG("y_offsetID not found"); }
+
 	z_offsetID = glGetUniformLocation(progID, "sv_z_offset");
 	if (z_offsetID < 0) { DEBUG_MSG("z_offsetID not found"); };
 
@@ -380,7 +388,7 @@ void Game::render()
 	glBufferSubData(GL_ARRAY_BUFFER, 3 * VERTICES * sizeof(GLfloat), 4 * COLORS * sizeof(GLfloat), colors);
 	glBufferSubData(GL_ARRAY_BUFFER, ((3 * VERTICES) + (4 * COLORS)) * sizeof(GLfloat), 2 * UVS * sizeof(GLfloat), uvs);
 
-	// Send transformation to shader mvp uniform
+	// Send transformation to shader mvp uniform [0][0] is start of array
 	glUniformMatrix4fv(mvpID, 1, GL_FALSE, &mvp[0][0]);
 
 	// Set Active Texture .... 32 GL_TEXTURE0 .... GL_TEXTURE31
