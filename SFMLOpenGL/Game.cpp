@@ -39,7 +39,7 @@ int comp_count;					// Component of texture
 unsigned char* img_data;		// image data
 
 mat4 mvp, projection, 
-		view, model, model2, model3;			// Model View Projection
+		view, player, enemy1, enemy2;			// Model View Projection
 
 Font font;						// Game font
 
@@ -85,25 +85,25 @@ void Game::run()
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 			{
 				// Set Model Rotation
-				model = rotate(model, 0.01f, glm::vec3(0, 1, 0)); // Rotate
+				player = rotate(player, 0.01f, glm::vec3(0, 1, 0)); // Rotate
 			}
 
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			{
 				// Set Model Rotation
-				model = rotate(model, -0.01f, glm::vec3(0, 1, 0)); // Rotate
+				player = rotate(player, -0.01f, glm::vec3(0, 1, 0)); // Rotate
 			}
 
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 			{
 				// Set Model Rotation
-				model = rotate(model, -0.01f, glm::vec3(1, 0, 0)); // Rotate
+				player = rotate(player, -0.01f, glm::vec3(1, 0, 0)); // Rotate
 			}
 
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 			{
 				// Set Model Rotation
-				model = rotate(model, 0.01f, glm::vec3(1, 0, 0)); // Rotate
+				player = rotate(player, 0.01f, glm::vec3(1, 0, 0)); // Rotate
 			}
 		}
 		update();
@@ -291,17 +291,17 @@ void Game::initialize()
 		);
 
 	// Model matrix
-	model = mat4(
+	player = mat4(
 		1.0f					// Identity Matrix
 		);
-	model2 = mat4(
+	enemy1 = mat4(
 		1.0f					// Identity Matrix
 	);
-	model3 = mat4(
+	enemy2 = mat4(
 		1.0f					// Identity Matrix
 	);
-	model2 = glm::translate(model2, glm::vec3(-3, 0, 0));
-	model3 = glm::translate(model3, glm::vec3(3, 0, 0));
+	enemy1 = glm::translate(enemy1, glm::vec3(-3, 0, 0));
+	enemy2 = glm::translate(enemy2, glm::vec3(3, 0, 0));
 	// Enable Depth Test
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -321,12 +321,12 @@ void Game::update()
 	// To alter Camera modify view & projection
 	
 
-	model2 = glm::rotate(model2, 0.002f, glm::vec3(0, 0, 1));
+	enemy1 = glm::rotate(enemy1, 0.002f, glm::vec3(0, 0, 1));
 
-	model3 = glm::translate(model3, vec3(0, 0, 0.01));
-	if (model3[3].z > 15)
+	enemy2 = glm::translate(enemy2, vec3(0, 0, 0.01));
+	if (enemy2[3].z > 15)
 	{
-		model3 = glm::translate(model3, vec3(0, 0, -100));
+		enemy2 = glm::translate(enemy2, vec3(0, 0, -100));
 	}
 }
 
@@ -364,7 +364,7 @@ void Game::render()
 	// https://www.sfml-dev.org/documentation/2.0/classsf_1_1RenderTarget.php#a8d1998464ccc54e789aaf990242b47f7
 
 	window.popGLStates();
-	mvp = projection * view * model;
+	mvp = projection * view * player;
 	// Rebind Buffers and then set SubData
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vib);
@@ -430,7 +430,7 @@ void Game::render()
 	// Draw Element Arrays
 	glDrawElements(GL_TRIANGLES, 3 * INDICES, GL_UNSIGNED_INT, NULL);
 	//------------------------------------------------------------------------MODEL 2----------------------------------------------------------------
-	mvp = projection * view * model2;
+	mvp = projection * view * enemy1;
 	// Rebind Buffers and then set SubData
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vib);
@@ -496,7 +496,7 @@ void Game::render()
 	// Draw Element Arrays
 	glDrawElements(GL_TRIANGLES, 3 * INDICES, GL_UNSIGNED_INT, NULL);
 	//-----------------------------------------------------------------------------MODEL 3 ------------------------------------------------------//
-	mvp = projection * view * model3;
+	mvp = projection * view * enemy2;
 	// Rebind Buffers and then set SubData
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vib);
