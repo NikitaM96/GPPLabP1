@@ -39,7 +39,7 @@ int comp_count;					// Component of texture
 unsigned char* img_data;		// image data
 
 mat4 mvp, projection, 
-		view, model;			// Model View Projection
+		view, model, model2, model3;			// Model View Projection
 
 Font font;						// Game font
 
@@ -279,7 +279,7 @@ void Game::initialize()
 	projection = perspective(
 		45.0f,					// Field of View 45 degrees
 		4.0f / 3.0f,			// Aspect ratio
-		5.0f,					// Display Range Min : 0.1f unit
+		0.1f,					// Display Range Min : 0.1f unit
 		100.0f					// Display Range Max : 100.0f unit
 		);
 
@@ -294,7 +294,14 @@ void Game::initialize()
 	model = mat4(
 		1.0f					// Identity Matrix
 		);
-
+	model2 = mat4(
+		1.0f					// Identity Matrix
+	);
+	model3 = mat4(
+		1.0f					// Identity Matrix
+	);
+	model2 = glm::translate(model2, glm::vec3(-3, 0, 0));
+	model3 = glm::translate(model3, glm::vec3(3, 0, 0));
 	// Enable Depth Test
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -312,7 +319,15 @@ void Game::update()
 	// Update Model View Projection
 	// For mutiple objects (cubes) create multiple models
 	// To alter Camera modify view & projection
-	mvp = projection * view * model;
+	
+
+	model2 = glm::rotate(model2, 0.002f, glm::vec3(0, 0, 1));
+
+	model3 = glm::translate(model3, vec3(0, 0, 0.01));
+	if (model3[3].z > 15)
+	{
+		model3 = glm::translate(model3, vec3(0, 0, -100));
+	}
 }
 
 void Game::render()
@@ -349,7 +364,7 @@ void Game::render()
 	// https://www.sfml-dev.org/documentation/2.0/classsf_1_1RenderTarget.php#a8d1998464ccc54e789aaf990242b47f7
 
 	window.popGLStates();
-
+	mvp = projection * view * model;
 	// Rebind Buffers and then set SubData
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vib);
@@ -414,6 +429,140 @@ void Game::render()
 
 	// Draw Element Arrays
 	glDrawElements(GL_TRIANGLES, 3 * INDICES, GL_UNSIGNED_INT, NULL);
+	//------------------------------------------------------------------------MODEL 2----------------------------------------------------------------
+	mvp = projection * view * model2;
+	// Rebind Buffers and then set SubData
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vib);
+
+	// Use Progam on GPU
+	glUseProgram(progID);
+
+	// Find variables within the shader
+	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetAttribLocation.xml
+	positionID = glGetAttribLocation(progID, "sv_position");
+	if (positionID < 0) { DEBUG_MSG("positionID not found"); }
+
+	colorID = glGetAttribLocation(progID, "sv_color");
+	if (colorID < 0) { DEBUG_MSG("colorID not found"); }
+
+	uvID = glGetAttribLocation(progID, "sv_uv");
+	if (uvID < 0) { DEBUG_MSG("uvID not found"); }
+
+	textureID = glGetUniformLocation(progID, "f_texture");
+	if (textureID < 0) { DEBUG_MSG("textureID not found"); }
+
+	mvpID = glGetUniformLocation(progID, "sv_mvp");
+	if (mvpID < 0) { DEBUG_MSG("mvpID not found"); }
+
+	x_offsetID = glGetUniformLocation(progID, "sv_x_offset");
+	if (x_offsetID < 0) { DEBUG_MSG("x_offsetID not found"); }
+
+	y_offsetID = glGetUniformLocation(progID, "sv_y_offset");
+	if (y_offsetID < 0) { DEBUG_MSG("y_offsetID not found"); }
+
+	z_offsetID = glGetUniformLocation(progID, "sv_z_offset");
+	if (z_offsetID < 0) { DEBUG_MSG("z_offsetID not found"); };
+
+	// VBO Data....vertices, colors and UV's appended
+	glBufferSubData(GL_ARRAY_BUFFER, 0 * VERTICES * sizeof(GLfloat), 3 * VERTICES * sizeof(GLfloat), vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 3 * VERTICES * sizeof(GLfloat), 4 * COLORS * sizeof(GLfloat), colors);
+	glBufferSubData(GL_ARRAY_BUFFER, ((3 * VERTICES) + (4 * COLORS)) * sizeof(GLfloat), 2 * UVS * sizeof(GLfloat), uvs);
+
+	// Send transformation to shader mvp uniform [0][0] is start of array
+	glUniformMatrix4fv(mvpID, 1, GL_FALSE, &mvp[0][0]);
+
+	// Set Active Texture .... 32 GL_TEXTURE0 .... GL_TEXTURE31
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(textureID, 0); // 0 .... 31
+
+							   // Set the X, Y and Z offset (this allows for multiple cubes via different shaders)
+							   // Experiment with these values to change screen positions
+	glUniform1f(x_offsetID, 0.00f);
+	glUniform1f(y_offsetID, 0.00f);
+	glUniform1f(z_offsetID, 0.00f);
+
+	// Set pointers for each parameter (with appropriate starting positions)
+	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
+	glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, 0, (VOID*)(3 * VERTICES * sizeof(GLfloat)));
+	glVertexAttribPointer(uvID, 2, GL_FLOAT, GL_FALSE, 0, (VOID*)(((3 * VERTICES) + (4 * COLORS)) * sizeof(GLfloat)));
+
+	// Enable Arrays
+	glEnableVertexAttribArray(positionID);
+	glEnableVertexAttribArray(colorID);
+	glEnableVertexAttribArray(uvID);
+
+	// Draw Element Arrays
+	glDrawElements(GL_TRIANGLES, 3 * INDICES, GL_UNSIGNED_INT, NULL);
+	//-----------------------------------------------------------------------------MODEL 3 ------------------------------------------------------//
+	mvp = projection * view * model3;
+	// Rebind Buffers and then set SubData
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vib);
+
+	// Use Progam on GPU
+	glUseProgram(progID);
+
+	// Find variables within the shader
+	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGetAttribLocation.xml
+	positionID = glGetAttribLocation(progID, "sv_position");
+	if (positionID < 0) { DEBUG_MSG("positionID not found"); }
+
+	colorID = glGetAttribLocation(progID, "sv_color");
+	if (colorID < 0) { DEBUG_MSG("colorID not found"); }
+
+	uvID = glGetAttribLocation(progID, "sv_uv");
+	if (uvID < 0) { DEBUG_MSG("uvID not found"); }
+
+	textureID = glGetUniformLocation(progID, "f_texture");
+	if (textureID < 0) { DEBUG_MSG("textureID not found"); }
+
+	mvpID = glGetUniformLocation(progID, "sv_mvp");
+	if (mvpID < 0) { DEBUG_MSG("mvpID not found"); }
+
+	x_offsetID = glGetUniformLocation(progID, "sv_x_offset");
+	if (x_offsetID < 0) { DEBUG_MSG("x_offsetID not found"); }
+
+	y_offsetID = glGetUniformLocation(progID, "sv_y_offset");
+	if (y_offsetID < 0) { DEBUG_MSG("y_offsetID not found"); }
+
+	z_offsetID = glGetUniformLocation(progID, "sv_z_offset");
+	if (z_offsetID < 0) { DEBUG_MSG("z_offsetID not found"); };
+
+	// VBO Data....vertices, colors and UV's appended
+	glBufferSubData(GL_ARRAY_BUFFER, 0 * VERTICES * sizeof(GLfloat), 3 * VERTICES * sizeof(GLfloat), vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 3 * VERTICES * sizeof(GLfloat), 4 * COLORS * sizeof(GLfloat), colors);
+	glBufferSubData(GL_ARRAY_BUFFER, ((3 * VERTICES) + (4 * COLORS)) * sizeof(GLfloat), 2 * UVS * sizeof(GLfloat), uvs);
+
+	// Send transformation to shader mvp uniform [0][0] is start of array
+	glUniformMatrix4fv(mvpID, 1, GL_FALSE, &mvp[0][0]);
+
+	// Set Active Texture .... 32 GL_TEXTURE0 .... GL_TEXTURE31
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(textureID, 0); // 0 .... 31
+
+							   // Set the X, Y and Z offset (this allows for multiple cubes via different shaders)
+							   // Experiment with these values to change screen positions
+	glUniform1f(x_offsetID, 0.00f);
+	glUniform1f(y_offsetID, 0.00f);
+	glUniform1f(z_offsetID, 0.00f);
+
+	// Set pointers for each parameter (with appropriate starting positions)
+	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
+	glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, 0, (VOID*)(3 * VERTICES * sizeof(GLfloat)));
+	glVertexAttribPointer(uvID, 2, GL_FLOAT, GL_FALSE, 0, (VOID*)(((3 * VERTICES) + (4 * COLORS)) * sizeof(GLfloat)));
+
+	// Enable Arrays
+	glEnableVertexAttribArray(positionID);
+	glEnableVertexAttribArray(colorID);
+	glEnableVertexAttribArray(uvID);
+
+	// Draw Element Arrays
+	glDrawElements(GL_TRIANGLES, 3 * INDICES, GL_UNSIGNED_INT, NULL);
+	//--------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
 	window.display();
 
 	// Disable Arrays
