@@ -91,14 +91,16 @@ void Game::run()
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 			{
 				// Set Model Rotation
-				player = rotate(player, 0.01f, glm::vec3(0, 1, 0)); // Rotate
+				//player = rotate(player, 0.01f, glm::vec3(0, 1, 0)); // Rotate
+				player = translate(player, vec3(-0.1, 0, 0));
 				
 			}
 
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			{
 				// Set Model Rotation
-				player = rotate(player, -0.01f, glm::vec3(0, 1, 0)); // Rotate
+				//player = rotate(player, -0.01f, glm::vec3(0, 1, 0)); // Rotate
+				player = translate(player, vec3(0.1, 0, 0));
 			}
 
 			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
