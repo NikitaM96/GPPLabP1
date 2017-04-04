@@ -40,7 +40,12 @@ int comp_count;					// Component of texture
 unsigned char* img_data;		// image data
 
 mat4 mvp, projection, 
-		view, player, enemy1, enemy2, enemy3, barrier1, barrier2;			// Model View Projection
+		view, player, 
+	    enemy1, enemy2, 
+	    enemy3, enemy4, 
+	    enemy5, enemy6, 
+	    barrier1, barrier2, 
+	    rotation1, rotation2;			// Model View Projection
 
 Font font;						// Game font
 
@@ -305,15 +310,37 @@ void Game::initialize()
 	enemy3 = mat4(
 		1.0f					//Indentity Matrix
 	);
+	enemy4 = mat4(
+		1.0f					//Indentity Matrix
+	);
+	enemy5 = mat4(
+		1.0f					//Indentity Matrix
+	);
+	enemy6 = mat4(
+		1.0f					//Indentity Matrix
+	);
 	barrier1 = mat4(
 		1.0f					//Indentity Matrix
 	);
 	barrier2 = mat4(
 		1.0f
 	);
+	rotation1 = mat4(
+		1.0f					//Indentity Matrix
+	);
+	rotation2 = mat4(
+		1.0f					//Indentity Matrix
+	);
 	enemy1 = glm::translate(enemy1, glm::vec3(-3, 0, 0));//LEFT
 	enemy2 = glm::translate(enemy2, glm::vec3(3, 0, 0));//RIGHT
 	enemy3 = glm::translate(enemy3, glm::vec3(-3, 0, 0));//LEFT
+	enemy4 = glm::translate(enemy4, glm::vec3(3, 0, 0));//RIGHT
+	enemy5 = glm::translate(enemy5, glm::vec3(-3, 0, 0));//LEFT
+	enemy6 = glm::translate(enemy5, glm::vec3(2.8, 0, 0));//LEFT
+
+	rotation1 = glm::translate(rotation1, glm::vec3(-5, 3, 0));//LEFT CORNER
+	rotation2 = glm::translate(rotation2, glm::vec3(5, 3, 0));//RIGHT CORNER
+
 	barrier1 = glm::translate(barrier1, glm::vec3(-5, 0, 0));
 	barrier1 = glm::scale(barrier1, glm::vec3(0, 1, 100)); //LEFT BARRIER
 	barrier2 = glm::translate(barrier2, glm::vec3(5, 0, 0));
@@ -340,24 +367,39 @@ void Game::update()
 	// To alter Camera modify view & projection
 	
 
-	enemy1 = glm::rotate(enemy1, 0.002f, glm::vec3(0, 0, 1));
-	/*enemy1 = glm::translate(enemy1, vec3(0, 0, 0.02));
+	rotation1 = glm::rotate(rotation1, 0.002f, glm::vec3(0, 0, 1));
+	rotation2 = glm::rotate(rotation2, 0.002f, glm::vec3(0, 0, 1));
+
+
+	enemy1 = glm::translate(enemy1, vec3(0, 0, 0.025));
 	if (enemy1[3].z > 15)
 	{
 		enemy1 = glm::translate(enemy1, vec3(0, 0, -100));
-	}*/
-
-
+	}
 	enemy2 = glm::translate(enemy2, vec3(0, 0, 0.02));
 	if (enemy2[3].z > 15)
 	{
 		enemy2 = glm::translate(enemy2, vec3(0, 0, -100));
 	}
-
-	enemy3 = glm::translate(enemy3, vec3(0, 0, 0.01));
+	enemy3 = glm::translate(enemy3, vec3(0, 0, 0.03));
 	if (enemy3[3].z > 15)
 	{
 		enemy3 = glm::translate(enemy3, vec3(0, 0, -100));
+	}
+	enemy4 = glm::translate(enemy4, vec3(0, 0, 0.035));
+	if (enemy4[3].z > 15)
+	{
+		enemy4 = glm::translate(enemy4, vec3(0, 0, -100));
+	}
+	enemy5 = glm::translate(enemy5, vec3(0, 0, 0.025));
+	if (enemy5[3].z > 15)
+	{
+		enemy5 = glm::translate(enemy5, vec3(0, 0, -100));
+	}
+	enemy6 = glm::translate(enemy6, vec3(0, 0, 0.04));
+	if (enemy6[3].z > 15)
+	{
+		enemy6 = glm::translate(enemy6, vec3(0, 0, -100));
 	}
 }
 
@@ -387,7 +429,7 @@ void Game::render()
 	Text text(hud, font);
 
 	text.setColor(sf::Color(255, 255, 255, 170));
-	text.setPosition(50.f, 50.f);
+	text.setPosition(20.f, 20.f);
 
 	window.draw(text);
 
@@ -400,8 +442,13 @@ void Game::render()
 	drawCube(enemy1);
 	drawCube(enemy2);
 	drawCube(enemy3);
+	drawCube(enemy4);
+	drawCube(enemy5);
+	drawCube(enemy6);
 	drawCube(barrier1);
 	drawCube(barrier2);
+	drawCube(rotation1);
+	drawCube(rotation2);
 
 	window.display();
 
