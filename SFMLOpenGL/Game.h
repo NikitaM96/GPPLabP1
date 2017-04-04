@@ -36,6 +36,7 @@ private:
 	bool isRunning = false;
 	void initialize();
 	void update();
+	void drawCube(glm::mat4 model);
 	void render();
 	void unload();
 };
