@@ -39,6 +39,10 @@ private:
 	void drawCube(glm::mat4 model);
 	void render();
 	void unload();
+	mat4 enemy[6];
+	vec3 enemyVec[6], playerVec;
+	float enemyspeed = 0.02f;
+	sf::RectangleShape enemyRect, playerRect;
 };
 
 #endif
